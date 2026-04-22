@@ -8,8 +8,11 @@ namespace NorthwindDotNet.Api.Models;
 [Table("TaxStatus")]
 public class TaxStatus
 {
+    // DatabaseGeneratedOption.None is required: EF Core defaults to Identity for all
+    // integer PKs, but TaxStatusID is a plain SMALLINT with application-assigned values.
     [Key]
     [Column("TaxStatusID")]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public short TaxStatusId { get; set; }
 
     // Property renamed to avoid CS0542 (member name same as enclosing type).
