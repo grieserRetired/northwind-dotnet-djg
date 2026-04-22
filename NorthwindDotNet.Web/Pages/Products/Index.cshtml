@@ -1,0 +1,57 @@
+@page
+@model NorthwindDotNet.Web.Pages.Products.IndexModel
+@{
+    ViewData["Title"] = "Products";
+}
+
+<h1 class="mb-4">Products</h1>
+
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (!Model.Products.Any())
+{
+    <div class="alert alert-info">No products found. Make sure the API is running at http://localhost:5132.</div>
+}
+else
+{
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th class="text-end">Unit Price</th>
+                <th class="text-end">Unit Cost</th>
+                <th class="text-end">Reorder Level</th>
+                <th class="text-center">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model.Products
+                .OrderBy(p => p.ProductCategory?.ProductCategoryName)
+                .ThenBy(p => p.ProductName))
+            {
+                <tr class="@(p.Discontinued == true ? "text-muted" : "")">
+                    <td><code>@p.ProductCode</code></td>
+                    <td>@p.ProductName</td>
+                    <td>@p.ProductCategory?.ProductCategoryName</td>
+                    <td class="text-end">@p.UnitPrice?.ToString("C")</td>
+                    <td class="text-end">@p.StandardUnitCost?.ToString("C")</td>
+                    <td class="text-end">@p.ReorderLevel</td>
+                    <td class="text-center">
+                        @if (p.Discontinued == true)
+                        {
+                            <span class="badge bg-secondary">Discontinued</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

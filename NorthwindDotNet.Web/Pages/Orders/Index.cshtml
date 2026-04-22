@@ -1,0 +1,64 @@
+@page
+@model NorthwindDotNet.Web.Pages.Orders.IndexModel
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<h1 class="mb-4">Orders</h1>
+
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (!Model.Orders.Any())
+{
+    <div class="alert alert-info">No orders found. Make sure the API is running at http://localhost:5132.</div>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Order #</th>
+                <th>Order Date</th>
+                <th>Customer</th>
+                <th>Employee</th>
+                <th>Shipper</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.Orders.OrderByDescending(o => o.OrderDate))
+            {
+                <tr>
+                    <td>@order.OrderId</td>
+                    <td>@order.OrderDate?.ToString("d")</td>
+                    <td>@order.Customer?.CompanyName</td>
+                    <td>@order.Employee?.FullName</td>
+                    <td>@order.Shipper?.CompanyName</td>
+                    <td>
+                        <span class="badge @StatusBadge(order.OrderStatus?.OrderStatusName)">
+                            @order.OrderStatus?.OrderStatusName
+                        </span>
+                    </td>
+                    <td>
+                        <a asp-page="./Details" asp-route-id="@order.OrderId" class="btn btn-sm btn-outline-primary">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@functions {
+    static string StatusBadge(string? status) => status switch
+    {
+        "New"      => "bg-primary",
+        "Shipped"  => "bg-info text-dark",
+        "Invoiced" => "bg-warning text-dark",
+        "Paid"     => "bg-success",
+        "Closed"   => "bg-secondary",
+        _          => "bg-light text-dark"
+    };
+}

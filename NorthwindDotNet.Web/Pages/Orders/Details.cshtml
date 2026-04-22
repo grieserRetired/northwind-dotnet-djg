@@ -1,0 +1,140 @@
+@page "{id:int}"
+@model NorthwindDotNet.Web.Pages.Orders.DetailsModel
+@{
+    ViewData["Title"] = Model.Order is not null ? $"Order #{Model.Order.OrderId}" : "Order";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Orders/Index">Orders</a></li>
+        <li class="breadcrumb-item active">@ViewData["Title"]</li>
+    </ol>
+</nav>
+
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Order is null)
+{
+    <div class="alert alert-warning">Order not found.</div>
+}
+else
+{
+    var order = Model.Order;
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>Order #@order.OrderId</h2>
+            <dl class="row">
+                <dt class="col-sm-4">Status</dt>
+                <dd class="col-sm-8">
+                    <span class="badge @StatusBadge(order.OrderStatus?.OrderStatusName)">
+                        @order.OrderStatus?.OrderStatusName
+                    </span>
+                </dd>
+                <dt class="col-sm-4">Customer</dt>
+                <dd class="col-sm-8">@(order.Customer?.CompanyName ?? "—")</dd>
+                <dt class="col-sm-4">Employee</dt>
+                <dd class="col-sm-8">@(order.Employee?.FullName ?? "—")</dd>
+                <dt class="col-sm-4">Shipper</dt>
+                <dd class="col-sm-8">@(order.Shipper?.CompanyName ?? "—")</dd>
+                <dt class="col-sm-4">Payment</dt>
+                <dd class="col-sm-8">@(order.PaymentMethod ?? "—")</dd>
+            </dl>
+        </div>
+        <div class="col-md-6">
+            <dl class="row">
+                <dt class="col-sm-4">Order Date</dt>
+                <dd class="col-sm-8">@(order.OrderDate?.ToString("d") ?? "—")</dd>
+                <dt class="col-sm-4">Shipped</dt>
+                <dd class="col-sm-8">@(order.ShippedDate?.ToString("d") ?? "—")</dd>
+                <dt class="col-sm-4">Invoiced</dt>
+                <dd class="col-sm-8">@(order.InvoiceDate?.ToString("d") ?? "—")</dd>
+                <dt class="col-sm-4">Paid</dt>
+                <dd class="col-sm-8">@(order.PaidDate?.ToString("d") ?? "—")</dd>
+                <dt class="col-sm-4">Shipping Fee</dt>
+                <dd class="col-sm-8">@(order.ShippingFee?.ToString("C") ?? "—")</dd>
+                <dt class="col-sm-4">Tax Rate</dt>
+                <dd class="col-sm-8">@(order.TaxRate.HasValue ? ((decimal)order.TaxRate.Value).ToString("P0") : "—")</dd>
+            </dl>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(order.Notes))
+    {
+        <p><strong>Notes:</strong> @order.Notes</p>
+    }
+
+    <h4>Line Items</h4>
+
+    @if (!order.OrderDetails.Any())
+    {
+        <p class="text-muted">No line items on this order.</p>
+    }
+    else
+    {
+        var subtotal = order.OrderDetails.Sum(d => d.LineTotal);
+        var total = subtotal + (order.ShippingFee ?? 0m);
+
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Product</th>
+                    <th class="text-end">Qty</th>
+                    <th class="text-end">Unit Price</th>
+                    <th class="text-end">Discount</th>
+                    <th class="text-end">Line Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in order.OrderDetails)
+                {
+                    <tr>
+                        <td>@item.Product?.ProductName</td>
+                        <td class="text-end">@item.Quantity</td>
+                        <td class="text-end">@item.UnitPrice?.ToString("C")</td>
+                        <td class="text-end">
+                            @(item.Discount > 0 ? ((decimal)item.Discount!.Value).ToString("P0") : "—")
+                        </td>
+                        <td class="text-end fw-semibold">@item.LineTotal.ToString("C")</td>
+                        <td>@item.OrderDetailStatus?.OrderDetailStatusName</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="table-light">
+                <tr>
+                    <td colspan="4" class="text-end">Subtotal</td>
+                    <td class="text-end">@subtotal.ToString("C")</td>
+                    <td></td>
+                </tr>
+                @if (order.ShippingFee.HasValue)
+                {
+                    <tr>
+                        <td colspan="4" class="text-end">Shipping</td>
+                        <td class="text-end">@order.ShippingFee.Value.ToString("C")</td>
+                        <td></td>
+                    </tr>
+                }
+                <tr class="fw-bold">
+                    <td colspan="4" class="text-end">Total</td>
+                    <td class="text-end">@total.ToString("C")</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    }
+}
+
+@functions {
+    static string StatusBadge(string? status) => status switch
+    {
+        "New"      => "bg-primary",
+        "Shipped"  => "bg-info text-dark",
+        "Invoiced" => "bg-warning text-dark",
+        "Paid"     => "bg-success",
+        "Closed"   => "bg-secondary",
+        _          => "bg-light text-dark"
+    };
+}
