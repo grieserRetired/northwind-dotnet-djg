@@ -14,18 +14,24 @@ public class OrdersController : ControllerBase
     public OrdersController(NorthwindDbContext context) => _context = context;
 
     // GET: api/Orders
+    // Optional filter: api/Orders?companyId=3
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+    public async Task<ActionResult<IEnumerable<Order>>> GetOrders([FromQuery] int? companyId = null)
     {
-        return await _context.Orders
+        var query = _context.Orders
             .AsNoTracking()
             .Include(o => o.Employee)
             .Include(o => o.Customer)
             .Include(o => o.Shipper)
             .Include(o => o.OrderStatus)
             .Include(o => o.TaxStatus)
-            .ToListAsync();
+            .AsQueryable();
+
+        if (companyId.HasValue)
+            query = query.Where(o => o.CustomerId == companyId.Value);
+
+        return await query.ToListAsync();
     }
 
     // GET: api/Orders/5

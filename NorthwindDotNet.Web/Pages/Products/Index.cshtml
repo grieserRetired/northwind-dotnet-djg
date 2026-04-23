@@ -35,7 +35,7 @@ else
             {
                 <tr class="@(p.Discontinued == true ? "text-muted" : "")">
                     <td><code>@p.ProductCode</code></td>
-                    <td>@p.ProductName</td>
+                    <td><a asp-page="/Products/Details" asp-route-id="@p.ProductId">@p.ProductName</a></td>
                     <td>@p.ProductCategory?.ProductCategoryName</td>
                     <td class="text-end">@p.UnitPrice?.ToString("C")</td>
                     <td class="text-end">@p.StandardUnitCost?.ToString("C")</td>

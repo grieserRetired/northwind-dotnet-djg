@@ -1,0 +1,163 @@
+@page "{id:int}"
+@model NorthwindDotNet.Web.Pages.Companies.DetailsModel
+@{
+    ViewData["Title"] = Model.Company?.CompanyName ?? "Company";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Companies/Index">Companies</a></li>
+        <li class="breadcrumb-item active">@ViewData["Title"]</li>
+    </ol>
+</nav>
+
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Company is null)
+{
+    <div class="alert alert-warning">Company not found.</div>
+}
+else
+{
+    var c = Model.Company;
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <h2 class="mb-0">@c.CompanyName</h2>
+        <span class="badge @TypeBadge(c.CompanyType?.CompanyTypeName)">
+            @c.CompanyType?.CompanyTypeName
+        </span>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h5 class="text-muted">Contact Info</h5>
+            <dl class="row">
+                <dt class="col-sm-4">Phone</dt>
+                <dd class="col-sm-8">@(c.BusinessPhone ?? "—")</dd>
+
+                <dt class="col-sm-4">Address</dt>
+                <dd class="col-sm-8">
+                    @if (!string.IsNullOrWhiteSpace(c.Address))
+                    {
+                        <span>@c.Address</span><br />
+                        <span>@c.City @c.StateAbbrev @c.Zip</span>
+                    }
+                    else { <span>—</span> }
+                </dd>
+
+                <dt class="col-sm-4">Website</dt>
+                <dd class="col-sm-8">
+                    @if (!string.IsNullOrWhiteSpace(c.Website))
+                    {
+                        <a href="@c.Website" target="_blank">@c.Website</a>
+                    }
+                    else { <span>—</span> }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(c.Notes))
+    {
+        <p><strong>Notes:</strong> @c.Notes</p>
+    }
+
+    <h5 class="mt-4">Contacts</h5>
+    @if (!c.Contacts.Any())
+    {
+        <p class="text-muted">No contacts on file.</p>
+    }
+    else
+    {
+        <table class="table table-bordered table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Title</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var contact in c.Contacts.OrderBy(x => x.LastName))
+                {
+                    <tr>
+                        <td>@contact.FullName</td>
+                        <td>@(contact.JobTitle ?? "—")</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(contact.EmailAddress))
+                            {
+                                <a href="mailto:@contact.EmailAddress">@contact.EmailAddress</a>
+                            }
+                            else { <span>—</span> }
+                        </td>
+                        <td>@(contact.PrimaryPhone ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h5 class="mt-4">Order History</h5>
+    @if (!Model.Orders.Any())
+    {
+        <p class="text-muted">No orders found for this company.</p>
+    }
+    else
+    {
+        <table class="table table-bordered table-sm table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Order #</th>
+                    <th>Date</th>
+                    <th>Shipped</th>
+                    <th>Status</th>
+                    <th>Employee</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model.Orders.OrderByDescending(o => o.OrderDate))
+                {
+                    <tr>
+                        <td>
+                            <a asp-page="/Orders/Details" asp-route-id="@o.OrderId">
+                                #@o.OrderId
+                            </a>
+                        </td>
+                        <td>@(o.OrderDate?.ToString("d") ?? "—")</td>
+                        <td>@(o.ShippedDate?.ToString("d") ?? "—")</td>
+                        <td>
+                            <span class="badge @StatusBadge(o.OrderStatus?.OrderStatusName)">
+                                @o.OrderStatus?.OrderStatusName
+                            </span>
+                        </td>
+                        <td>@(o.Employee?.FullName ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@functions {
+    static string TypeBadge(string? type) => type switch
+    {
+        "Customer"  => "bg-primary",
+        "Vendor"    => "bg-success",
+        "Shipper"   => "bg-info text-dark",
+        "Northwind" => "bg-warning text-dark",
+        _           => "bg-secondary"
+    };
+
+    static string StatusBadge(string? status) => status switch
+    {
+        "New"      => "bg-primary",
+        "Shipped"  => "bg-info text-dark",
+        "Invoiced" => "bg-warning text-dark",
+        "Paid"     => "bg-success",
+        "Closed"   => "bg-secondary",
+        _          => "bg-light text-dark"
+    };
+}

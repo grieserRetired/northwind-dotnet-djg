@@ -1,0 +1,115 @@
+@page "{id:int}"
+@model NorthwindDotNet.Web.Pages.Products.DetailsModel
+@{
+    ViewData["Title"] = Model.Product is not null ? Model.Product.ProductName : "Product";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Products/Index">Products</a></li>
+        <li class="breadcrumb-item active">@ViewData["Title"]</li>
+    </ol>
+</nav>
+
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Product is null)
+{
+    <div class="alert alert-warning">Product not found.</div>
+}
+else
+{
+    var p = Model.Product;
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <h2 class="mb-0">@p.ProductName</h2>
+        @if (p.Discontinued == true)
+        {
+            <span class="badge bg-secondary">Discontinued</span>
+        }
+        else
+        {
+            <span class="badge bg-success">Active</span>
+        }
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h5 class="text-muted">Product Info</h5>
+            <dl class="row">
+                <dt class="col-sm-5">Code</dt>
+                <dd class="col-sm-7"><code>@(p.ProductCode ?? "—")</code></dd>
+
+                <dt class="col-sm-5">Category</dt>
+                <dd class="col-sm-7">@(p.ProductCategory?.ProductCategoryName ?? "—")</dd>
+
+                <dt class="col-sm-5">Unit Price</dt>
+                <dd class="col-sm-7">@(p.UnitPrice?.ToString("C") ?? "—")</dd>
+
+                <dt class="col-sm-5">Unit Cost</dt>
+                <dd class="col-sm-7">@(p.StandardUnitCost?.ToString("C") ?? "—")</dd>
+
+                <dt class="col-sm-5">Qty Per Unit</dt>
+                <dd class="col-sm-7">@(p.QuantityPerUnit ?? "—")</dd>
+            </dl>
+        </div>
+        <div class="col-md-6">
+            <h5 class="text-muted">Inventory</h5>
+            <dl class="row">
+                <dt class="col-sm-5">Reorder Level</dt>
+                <dd class="col-sm-7">@(p.ReorderLevel?.ToString() ?? "—")</dd>
+
+                <dt class="col-sm-5">Target Level</dt>
+                <dd class="col-sm-7">@(p.TargetLevel?.ToString() ?? "—")</dd>
+
+                <dt class="col-sm-5">Min Reorder Qty</dt>
+                <dd class="col-sm-7">@(p.MinimumReorderQuantity?.ToString() ?? "—")</dd>
+            </dl>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(p.ProductDescription))
+    {
+        <p><strong>Description:</strong> @p.ProductDescription</p>
+    }
+
+    <h5 class="mt-4">Vendors</h5>
+    @if (!p.ProductVendors.Any())
+    {
+        <p class="text-muted">No vendors linked to this product.</p>
+    }
+    else
+    {
+        <table class="table table-bordered table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Vendor</th>
+                    <th>Phone</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pv in p.ProductVendors)
+                {
+                    <tr>
+                        <td>
+                            @if (pv.Vendor is not null)
+                            {
+                                <a asp-page="/Companies/Details" asp-route-id="@pv.Vendor.CompanyId">
+                                    @pv.Vendor.CompanyName
+                                </a>
+                            }
+                            else { <span>—</span> }
+                        </td>
+                        <td>@(pv.Vendor?.BusinessPhone ?? "—")</td>
+                        <td>@(pv.Vendor?.City ?? "—")</td>
+                        <td>@(pv.Vendor?.StateAbbrev ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}

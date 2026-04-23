@@ -32,7 +32,7 @@ else
                 .ThenBy(c => c.CompanyName))
             {
                 <tr>
-                    <td>@c.CompanyName</td>
+                    <td><a asp-page="/Companies/Details" asp-route-id="@c.CompanyId">@c.CompanyName</a></td>
                     <td>
                         <span class="badge @TypeBadge(c.CompanyType?.CompanyTypeName)">
                             @c.CompanyType?.CompanyTypeName

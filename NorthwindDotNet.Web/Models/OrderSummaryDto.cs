@@ -4,6 +4,8 @@ public class OrderSummaryDto
 {
     public int OrderId { get; set; }
     public DateTime? OrderDate { get; set; }
+    public DateTime? ShippedDate { get; set; }
+    public decimal? ShippingFee { get; set; }
     public EmployeeRefDto? Employee { get; set; }
     public CompanyRefDto? Customer { get; set; }
     public CompanyRefDto? Shipper { get; set; }
