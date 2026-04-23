@@ -1,3 +1,5 @@
+using System.Globalization;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
@@ -8,6 +10,11 @@ builder.Services.AddHttpClient("NorthwindApi", client =>
 });
 
 var app = builder.Build();
+
+var cultureInfo = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
