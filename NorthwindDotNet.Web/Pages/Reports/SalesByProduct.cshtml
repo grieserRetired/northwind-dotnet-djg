@@ -1,0 +1,102 @@
+@page
+@model NorthwindDotNet.Web.Pages.Reports.SalesByProductModel
+@{
+    ViewData["Title"] = "Sales by Product";
+}
+
+@section Scripts {
+<style>
+    @@media print {
+        .no-print { display: none !important; }
+        .navbar, footer, .breadcrumb { display: none !important; }
+    }
+</style>
+}
+
+<nav aria-label="breadcrumb" class="no-print">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Reports/Index">Reports</a></li>
+        <li class="breadcrumb-item active">Sales by Product</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Sales by Product</h1>
+    @if (Model.Results.Any())
+    {
+        <button class="btn btn-outline-secondary no-print" onclick="window.print()">
+            🖨️ Print / Save as PDF
+        </button>
+    }
+</div>
+
+<form method="get" class="row g-2 align-items-end mb-4 no-print">
+    <div class="col-auto">
+        <label class="form-label fw-semibold">From</label>
+        <input type="date" name="from" value="@Model.From?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label fw-semibold">To</label>
+        <input type="date" name="to" value="@Model.To?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Run Report</button>
+    </div>
+    @if (Model.From.HasValue || Model.To.HasValue)
+    {
+        <div class="col-auto">
+            <a asp-page="/Reports/SalesByProduct" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    }
+</form>
+
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger no-print">@Model.ErrorMessage</div>
+}
+else if (!Model.Results.Any())
+{
+    <div class="alert alert-info no-print">No data found for the selected range.</div>
+}
+else
+{
+    <p class="text-muted">
+        @if (Model.From.HasValue || Model.To.HasValue)
+        {
+            @($"Period: {Model.From?.ToString("d") ?? "—"} to {Model.To?.ToString("d") ?? "—"}")
+        }
+        else
+        {
+            @("All dates")
+        }
+    </p>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th class="text-end">Units Sold</th>
+                <th class="text-end">Total Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Results)
+            {
+                <tr>
+                    <td>@row.ProductName</td>
+                    <td>@row.CategoryName</td>
+                    <td class="text-end">@row.UnitsSold</td>
+                    <td class="text-end">@row.TotalRevenue.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot class="table-light fw-bold">
+            <tr>
+                <td colspan="2">Total</td>
+                <td class="text-end">@Model.Results.Sum(r => r.UnitsSold)</td>
+                <td class="text-end">@Model.Results.Sum(r => r.TotalRevenue).ToString("C")</td>
+            </tr>
+        </tfoot>
+    </table>
+}

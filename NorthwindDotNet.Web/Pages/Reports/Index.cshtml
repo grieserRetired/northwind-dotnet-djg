@@ -1,0 +1,37 @@
+@page
+@model NorthwindDotNet.Web.Pages.Reports.IndexModel
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<h1 class="mb-4">Reports</h1>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Invoice</h5>
+                <p class="card-text text-muted">Print or save a full invoice for any order, including line items, totals, and shipping.</p>
+                <a asp-page="/Reports/Invoice" class="btn btn-primary">Open Invoice</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Sales by Employee</h5>
+                <p class="card-text text-muted">Summary of orders and revenue grouped by employee for a selected date range.</p>
+                <a asp-page="/Reports/SalesByEmployee" class="btn btn-primary">View Report</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Sales by Product</h5>
+                <p class="card-text text-muted">Units sold and revenue grouped by product and category for a selected date range.</p>
+                <a asp-page="/Reports/SalesByProduct" class="btn btn-primary">View Report</a>
+            </div>
+        </div>
+    </div>
+</div>

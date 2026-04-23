@@ -1,0 +1,147 @@
+@page
+@model NorthwindDotNet.Web.Pages.Reports.InvoiceModel
+@{
+    ViewData["Title"] = Model.Order is not null ? $"Invoice — Order #{Model.Order.OrderId}" : "Invoice";
+}
+
+@section Scripts {
+<style>
+    @@media print {
+        .no-print { display: none !important; }
+        .navbar, footer, .breadcrumb { display: none !important; }
+        body { font-size: 12pt; }
+    }
+</style>
+}
+
+<div class="no-print">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Reports/Index">Reports</a></li>
+            <li class="breadcrumb-item active">Invoice</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4 align-items-end">
+        <div class="col-md-4">
+            <form method="get">
+                <label class="form-label fw-semibold">Order Number</label>
+                <div class="input-group">
+                    <input type="number" name="orderId" value="@Model.OrderId"
+                           class="form-control" placeholder="Enter order #" min="1" />
+                    <button type="submit" class="btn btn-primary">Load</button>
+                </div>
+            </form>
+        </div>
+        @if (Model.Order is not null)
+        {
+            <div class="col-md-auto">
+                <button class="btn btn-outline-secondary" onclick="window.print()">
+                    🖨️ Print / Save as PDF
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (Model.ErrorMessage is not null)
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+    else if (Model.OrderId.HasValue && Model.Order is null)
+    {
+        <div class="alert alert-warning">Order #@Model.OrderId not found.</div>
+    }
+</div>
+
+@if (Model.Order is not null)
+{
+    var o = Model.Order;
+    var subtotal = o.OrderDetails.Sum(d => d.LineTotal);
+    var total    = subtotal + (o.ShippingFee ?? 0m);
+
+    <div class="border rounded p-4">
+        <div class="row mb-4">
+            <div class="col-6">
+                <h2 class="mb-0">INVOICE</h2>
+                <p class="text-muted mb-0">Order #@o.OrderId</p>
+            </div>
+            <div class="col-6 text-end">
+                <strong>Northwind Traders</strong><br />
+                <span class="text-muted">northwindtraders.com</span>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <h6 class="text-muted text-uppercase">Bill To</h6>
+                <strong>@(o.Customer?.CompanyName ?? "—")</strong>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-muted text-uppercase">Ship Via</h6>
+                @(o.Shipper?.CompanyName ?? "—")
+            </div>
+            <div class="col-md-4 text-md-end">
+                <dl class="row mb-0">
+                    <dt class="col-6">Invoice Date</dt>
+                    <dd class="col-6">@(o.InvoiceDate?.ToString("d") ?? o.OrderDate?.ToString("d") ?? "—")</dd>
+                    <dt class="col-6">Order Date</dt>
+                    <dd class="col-6">@(o.OrderDate?.ToString("d") ?? "—")</dd>
+                    <dt class="col-6">Ship Date</dt>
+                    <dd class="col-6">@(o.ShippedDate?.ToString("d") ?? "—")</dd>
+                    <dt class="col-6">Status</dt>
+                    <dd class="col-6">@(o.OrderStatus?.OrderStatusName ?? "—")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Product</th>
+                    <th class="text-end">Qty</th>
+                    <th class="text-end">Unit Price</th>
+                    <th class="text-end">Discount</th>
+                    <th class="text-end">Line Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in o.OrderDetails)
+                {
+                    <tr>
+                        <td>@item.Product?.ProductName</td>
+                        <td class="text-end">@item.Quantity</td>
+                        <td class="text-end">@item.UnitPrice?.ToString("C")</td>
+                        <td class="text-end">@(item.Discount > 0 ? ((decimal)item.Discount!.Value).ToString("P0") : "—")</td>
+                        <td class="text-end">@item.LineTotal.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="table-light">
+                <tr>
+                    <td colspan="4" class="text-end">Subtotal</td>
+                    <td class="text-end">@subtotal.ToString("C")</td>
+                </tr>
+                @if (o.ShippingFee.HasValue)
+                {
+                    <tr>
+                        <td colspan="4" class="text-end">Shipping</td>
+                        <td class="text-end">@o.ShippingFee.Value.ToString("C")</td>
+                    </tr>
+                }
+                <tr class="fw-bold">
+                    <td colspan="4" class="text-end">Total Due</td>
+                    <td class="text-end">@total.ToString("C")</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        @if (!string.IsNullOrWhiteSpace(o.Notes))
+        {
+            <p><strong>Notes:</strong> @o.Notes</p>
+        }
+
+        <p class="text-muted text-center mt-4 mb-0">
+            Thank you for your business!
+        </p>
+    </div>
+}
