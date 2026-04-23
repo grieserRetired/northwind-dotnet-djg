@@ -10,6 +10,13 @@
         <li class="breadcrumb-item active">@ViewData["Title"]</li>
     </ol>
 </nav>
+@if (Model.Order is not null)
+{
+    <div class="d-flex justify-content-end mb-3">
+        <a asp-page="/Reports/Invoice" asp-route-orderId="@Model.Order.OrderId"
+           class="btn btn-outline-secondary btn-sm">🖨️ Print Invoice</a>
+    </div>
+}
 
 @if (Model.ErrorMessage is not null)
 {
